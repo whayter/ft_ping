@@ -76,6 +76,8 @@ int main(int ac, char** av)
 	signal(SIGINT, sig_handler);
 	signal(SIGALRM, sig_handler);
 
+	printf("Host is: %s (%s)\n", g_ping.recipient.name, g_ping.recipient.ai->ai_addr);
+
 	freeaddrinfo(g_ping.recipient.ai);
 	close(g_ping.sockfd);
 	return (0);
