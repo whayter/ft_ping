@@ -1,72 +1,88 @@
 #ifndef FT_PING_H
 #define FT_PING_H
 
-#include <stdlib.h>     // exit
-#include <stdio.h>      // strerror / printf family
-#include <unistd.h>     // alarm / getpid / getuid
-#include <signal.h>     // signal
-#include <arpa/inet.h>  // inet_ntop / inet_pton
-#include <sys/time.h>   // gettimeofday
-#include <sys/socket.h> // socket / setsockopt / sendto / recvmsg / getaddrinfo / freeaddrinfo / gai_strerror
-#include <sys/types.h>  // getaddrinfo / freeaddrinfo / gai_strerror
-#include <netdb.h>      // getaddrinfo / freeaddrinfo / gai_strerror
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+//#include <netinet/ip_icmp.h>
+#include <linux/icmp.h>
 
 /* Error messages */
 
-#define OPERATION_NOT_PERMITTED		"ft_ping: icmp open socket: Operation not permitted"
-#define SOCKET						"ft_ping: error: could not open socket"
-#define USAGE						"usage: ft_ping [-v] [-h] destination"
+#define USAGE						"Usage: sudo ft_ping [-v] [-h] destination\n"
 
+#define OPERATION_NOT_PERMITTED		"ft_ping: icmp open socket: Operation not permitted\n"
+#define SOCKET						"ft_ping: socket: Failed to create raw socket\n"
 
-
-
-#define INVALID_OPTION				"ft_ping: invalid option -- %s\n%s"
-#define OPTION_PARAM				"ft_ping: option requires an argument -- %s\n%s"
+#define UNKNOWN_HOST				"ft_ping: unknown host %s\n"
+#define INVALID_OPTION				"ft_ping: invalid option -- '%c'\n%s"
+#define OPTION_PARAM_MISSING		"ft_ping: option requires an argument -- '%c'\n%s"
 
 /* Structures */
 
-
-typedef struct			s_recipient
-{
-	char*				name;
-	struct addrinfo*	ai;
-}						t_recipient;
-
-typedef struct			s_sig
-{
-	int sigint;
-	int sigalrm;
-}						t_sig;
-
-
-typedef struct			s_ping
+typedef struct s_params
 {
 	int flags;
 	int ttl;
-
-
-	t_recipient recipient;
-
-	t_sig sig;
-
-
+	int packet_size;
 	int verbose;
+	struct timeval timeout;
+} t_params;
 
-	pid_t pid;
+typedef struct s_socket
+{
+	int fd;
+	struct sockaddr_in addr;
+} t_socket;
 
-	int sockfd;
+typedef struct s_recipient
+{
+	char* name;
+	char addr[INET6_ADDRSTRLEN];
+} t_recipient;
 
-	
+typedef struct s_packet
+{
+    struct icmphd hdr;
+	char data[];
+} t_packet;
 
-}				t_ping;
+typedef struct s_sig
+{
+	int sigint;
+	int	sigalrm;
+} t_sig;
+
+typedef struct s_stats
+{
+	int sent;
+	int received;
+	struct timeval start;
+	struct timeval end;
+} t_stats;
+
+typedef struct s_ping
+{
+	t_params params;
+	t_socket socket;
+	t_recipient recipient;
+	t_sig sig;
+	t_stats stats;
+} t_ping;
 
 /* Global variables */
 
-t_ping g_ping;
+t_ping g;
 
 /* Function prototypes from output.c */
 
-void header();
+void prompt();
 void statistics();
 void error(char* err);
 void fatal_error(char* err);

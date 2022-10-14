@@ -28,7 +28,7 @@ $(OBJ_DIR)/%.o: %.c
 
 $(NAME): $(OBJ)
 	@(echo "$(CLR_ON)Compiling...$(CLR_OFF)")
-	@$(CC) $(CFLAGS) $(IFLAGS) -o $@ $(OBJ)
+	@($(CC) $(CFLAGS) $(IFLAGS) -o $@ $(OBJ))
 	@(echo "$(CLR_ON)Done.$(CLR_OFF)")
 
 clean:
