@@ -92,20 +92,17 @@ void ping()
 	{
 		//gettimeofday(&start, NULL);
 
-
-
-		t_packet pckt;
-
-		struct icmphdr *pckt_hdr;
+		struct icmphdr pckt_hdr;
 		char pckt_data[g.params.packet_size];
 
-		//ft_memset(pckt_hdr, 0, 28);
-		//ft_memset(pckt_data, 0, g.params.packet_size);
+		ft_memset(&pckt_hdr, 0, sizeof(pckt_hdr));
+		ft_memset(&pckt_data, 0, g.params.packet_size);
 
-		pckt_hdr->type = ICMP_ECHO;
-		pckt_hdr->un.echo.id = getpid();
+		pckt_hdr.type = ICMP_ECHO;
+		pckt_hdr.un.echo.id = getpid();
 
 		(void)pckt_data;
+		(void)pckt_hdr;
 		
 
 

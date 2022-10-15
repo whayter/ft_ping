@@ -1,6 +1,8 @@
 #ifndef FT_PING_H
 #define FT_PING_H
 
+/* Library includes */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -46,12 +48,6 @@ typedef struct s_recipient
 	char* name;
 	char addr[INET6_ADDRSTRLEN];
 } t_recipient;
-
-typedef struct s_packet
-{
-    struct icmphd hdr;
-	char data[];
-} t_packet;
 
 typedef struct s_sig
 {
