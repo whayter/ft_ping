@@ -12,6 +12,7 @@
 
 * https://beej.us/guide/bgnet/html//index.html
 
+* https://stackoverflow.com/questions/42840636/difference-between-struct-ip-and-struct-iphdr
 
 ### Info
 

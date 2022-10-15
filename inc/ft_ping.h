@@ -12,8 +12,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netdb.h>
-//#include <netinet/ip_icmp.h>
-#include <linux/icmp.h>
+
+#include <netinet/ip_icmp.h>
+//#include <linux/icmp.h>
 
 /* Error messages */
 
@@ -47,6 +48,7 @@ typedef struct s_recipient
 {
 	char* name;
 	char addr[INET6_ADDRSTRLEN];
+	struct sockaddr* sockaddr;
 } t_recipient;
 
 typedef struct s_sig
@@ -63,6 +65,12 @@ typedef struct s_stats
 	struct timeval end;
 } t_stats;
 
+typedef struct s_pckt
+{
+	struct icmphdr* hdr;
+	char* data;
+} t_pckt;
+
 typedef struct s_ping
 {
 	t_params params;
@@ -74,7 +82,7 @@ typedef struct s_ping
 
 /* Global variables */
 
-t_ping g;
+extern t_ping g;
 
 /* Function prototypes from output.c */
 

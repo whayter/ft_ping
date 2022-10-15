@@ -24,10 +24,10 @@ all: $(NAME)
 
 $(OBJ_DIR)/%.o: %.c
 	@($(MKD) $(OBJ_DIR))
-	@($(CC) $(CFLAGS) -c $(IFLAGS) $< -o $@)
+	$(CC) $(CFLAGS) -c $(IFLAGS) $< -o $@
 
 $(NAME): $(OBJ)
-	@(echo "$(CLR_ON)Compiling...$(CLR_OFF)")
+#	@(echo "$(CLR_ON)Compiling...$(CLR_OFF)")
 	@($(CC) $(CFLAGS) $(IFLAGS) -o $@ $(OBJ))
 	@(echo "$(CLR_ON)Done.$(CLR_OFF)")
 

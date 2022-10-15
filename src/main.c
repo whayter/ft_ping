@@ -1,5 +1,7 @@
 #include "ft_ping.h"
 
+t_ping g;
+
 void sig_handler(int signum)
 {
 	switch (signum)
@@ -47,9 +49,10 @@ void get_addr()
 		fprintf(stderr, UNKNOWN_HOST, g.recipient.name);
 		exit(EXIT_FAILURE);
 	}
-	sockaddr = (struct sockaddr_in *)res->ai_addr;
+	g.recipient.sockaddr = res->ai_addr;
+	sockaddr = (struct sockaddr_in*)res->ai_addr;
 	inet_ntop(AF_INET, &sockaddr->sin_addr, g.recipient.addr, INET6_ADDRSTRLEN);
-	freeaddrinfo(res);
+	//freeaddrinfo(res);
 }
 
 void parse_args(char** args)
@@ -83,8 +86,6 @@ void ping()
 {
 	//struct timeval start;
 
-	int seq = 1;
-
 	gettimeofday(&g.stats.start, NULL);
 	prompt();
 
@@ -92,30 +93,31 @@ void ping()
 	{
 		//gettimeofday(&start, NULL);
 
-		struct icmphdr pckt_hdr;
+		struct icmphdr* pckt_hdr;
 		char pckt_data[g.params.packet_size];
 
 		ft_memset(&pckt_hdr, 0, sizeof(pckt_hdr));
 		ft_memset(&pckt_data, 0, g.params.packet_size);
 
-		pckt_hdr.type = ICMP_ECHO;
-		pckt_hdr.un.echo.id = getpid();
+		pckt_hdr->type = ICMP_ECHO;
+		pckt_hdr->code = 0;					// ?
 
-		(void)pckt_data;
-		(void)pckt_hdr;
-		
+		pckt_hdr->un.echo.id = getpid();
+		pckt_hdr->un.echo.sequence = ++g.stats.sent;
 
+		t_pckt pckt;
+		pckt.hdr = pckt_hdr;
+		pckt.data = pckt_data;
 
-		//int r = sendto(g.sockfd, &pckt, sizeof(pckt), 0);
-
-		seq++;
+		int r = sendto(g.socket.fd, &pckt, sizeof(pckt), 0, g.recipient.sockaddr, sizeof(g.recipient.sockaddr));
+		if (r <= 0)
+		{
+			printf("oops\n");
+		}
 	}
-
 	gettimeofday(&g.stats.end, NULL);
-
 	statistics();
 }
-
 
 // need to review error messages
 void open_socket()
