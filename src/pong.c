@@ -1,32 +1,5 @@
 #include "ft_ping.h"
 
-
-
-/* TMP */
-
-char *get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen)
-{
-    switch(sa->sa_family) {
-        case AF_INET:
-            inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),
-                    s, maxlen);
-            break;
-
-        case AF_INET6:
-            inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr),
-                    s, maxlen);
-            break;
-
-        default:
-            strncpy(s, "Unknown AF", maxlen);
-            return NULL;
-    }
-
-    return s;
-}
-
-/* END TMP */
-
 void update_stats(t_sequence *seq)
 {
 	gettimeofday(&seq->end, NULL);
@@ -43,13 +16,14 @@ void update_stats(t_sequence *seq)
 	g.stats.sum += seq->rtt;
 	g.stats.ssum += (seq->rtt * seq->rtt);
 }
-
+/*
 void unpack_packet(t_sequence *seq)
 {
-	
-}
 
-int receive_echo_reply(t_sequence *seq)				// tmp name
+}
+*/
+
+int receive_echo_reply(t_sequence *seq)
 {
 	struct msghdr mhdr;
 	struct iovec iov;
@@ -68,20 +42,21 @@ int receive_echo_reply(t_sequence *seq)				// tmp name
 
 	if ((seq->nbytes_received = recvmsg(g.socket.fd, &mhdr, 0)) <= 0)
 	{
-		fprintf(stderr, "ft_ping: recvmsg: %s\n", strerror(errno));
+		fprintf(stderr, "ft_ping: recvmsg: %s\n", strerror(errno));				// tmp
 		return (-1);
 	}
 
-	char source_ip[INET6_ADDRSTRLEN];
-	inet_ntop(AF_INET, &in.sin_addr, ip, INET6_ADDRSTRLEN);
+	inet_ntop(AF_INET, &in.sin_addr, seq->host_addr, INET6_ADDRSTRLEN);
 
-	if (ft_strcmp(source_ip, g.host.addr) != 0)
+	if (ft_strcmp(seq->host_addr, g.host.addr) != 0)
 	{
 		g.stats.errors++;
-		printf("from %s icmp_seq=%d Destination Net Unreachable\n")
+		printf("from %s icmp_seq=%d Destination Net Unreachable\n", seq->host_addr, seq->n);
 	}
-
-	printf("ip: %s\n", ip);
+	else
+	{
+		
+	}
 
 	update_stats(seq);
 	seq_info(&mhdr, seq);

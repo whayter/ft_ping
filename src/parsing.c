@@ -80,6 +80,16 @@ static int set_ttl(int i, int ac, char **args)
 }
 
 /*
+** -V option: show version and exit
+*/
+
+static void version()
+{
+	printf("%s", VERSION);
+	exit(EXIT_SUCCESS);
+}
+
+/*
 ** bad option
 */
 
@@ -137,6 +147,8 @@ void parse_args(int ac, char **args)
 			i += set_interval(i, ac, args);
 		else if (ft_strcmp(args[i], "-t") == 0)
 			i += set_ttl(i, ac, args);
+		else if (ft_strcmp(args[i], "-V") == 0)
+			version();
 		else if (args[i][0] == '-' && args[i][1] != '\0')
 			bad_option(args[i][1]);
 		else if (i + 1 == ac)

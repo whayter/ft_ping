@@ -23,10 +23,13 @@
 
 /* Messages */
 
+#define VERSION						"ft_ping 1.0\n"
+
 #define PROMPT						"PING %s (%s): %d(%d) bytes of data.\n"
 
 #define STATS_1						"\n--- %s ft_ping statistics ---\n"
 #define STATS_2						"%d packets transmitted, %d received, %d%% packet loss, time %lums\n"
+#define STATS_2_ERR					"%d packets transmitted, %d received, +%d errors, %d%% packet loss, time %lums\n" // tmp
 #define STATS_3						"rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n"
 
 /* Error messages */
@@ -122,6 +125,7 @@ typedef struct s_sequence
 	ssize_t nbytes_received;
 	t_pckt pckt;
 	//t_ping_pckt pckt;
+	char host_addr[INET6_ADDRSTRLEN];
 } t_sequence;
 
 typedef struct s_ping
