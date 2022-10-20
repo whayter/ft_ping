@@ -2,152 +2,103 @@
 
 t_ping g;
 
+/*
+** Signals handler function
+*/
+
 void sig_handler(int signum)
 {
 	switch (signum)
 	{
 		case SIGINT:
+		{
 			g.sig.sigint = 0;
 			break ;
+		}
 		case SIGALRM:
-			g.sig.sigalrm = 1;
+		{
+			g.sig.sigalrm = 0;
 			break ;
+		}
 		default:
-			return ;
+			break ;
 	}
 }
 
-void init()
+/*
+** Global variable initialization
+*/
+
+static void init()
 {
+	/* params */
+	g.params.count = -1;
+	g.params.timestamp = 0;
+	g.params.interval = 1;
 	g.params.ttl = 64;
 	g.params.packet_size = 56;
 	g.params.timeout.tv_sec = 1;
 	g.params.timeout.tv_usec = 0;
 	g.params.verbose = 0;
-
+	/* signal */
 	g.sig.sigint = 1;
 	g.sig.sigalrm = 0;
-
+	/* stats */
+	g.stats.seq = 0;
 	g.stats.sent = 0;
 	g.stats.received = 0;
+	g.stats.errors = 0;
+	g.stats.min = DBL_MAX;
+	g.stats.max = 0.0;
+	g.stats.sum = 0.0;
+	g.stats.ssum = 0.0;
+	/* host */
+	g.host.name = NULL;
 }
 
-void get_addr()
-{
-	struct addrinfo hints;
-	struct addrinfo* res;
-	struct sockaddr_in* sockaddr;
-	int ret;
+/*
+** Create raw socket
+** need to review error messages !
+*/
 
-	ft_memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC; // AF_INET
-	hints.ai_socktype = SOCK_RAW;
-	hints.ai_protocol = IPPROTO_ICMP;
-	ret = getaddrinfo(g.recipient.name, NULL, &hints, &res);
-	if (ret != 0)
-	{
-		fprintf(stderr, UNKNOWN_HOST, g.recipient.name);
-		exit(EXIT_FAILURE);
-	}
-	g.recipient.sockaddr = res->ai_addr;
-	sockaddr = (struct sockaddr_in*)res->ai_addr;
-	inet_ntop(AF_INET, &sockaddr->sin_addr, g.recipient.addr, INET6_ADDRSTRLEN);
-	//freeaddrinfo(res);
-}
-
-void parse_args(char** args)
-{
-	int i = 0;
-	
-	while (args[++i])
-	{
-		if (ft_strcmp(args[i], "-h") == 0)
-		{
-			printf("%s", USAGE);
-			exit(2);
-		}
-		else if (ft_strcmp(args[i], "-v") == 0)
-			g.params.verbose = 1;
-		else if (args[i][0] == '-' && args[i][1] != '\0')
-		{
-			fprintf(stderr, INVALID_OPTION, args[i][1], USAGE);
-			exit(EXIT_FAILURE);
-		}
-		else
-		{
-			g.recipient.name = args[i];
-			get_addr();
-			return ;
-		}
-	}
-}
-
-void ping()
-{
-	//struct timeval start;
-
-	gettimeofday(&g.stats.start, NULL);
-	prompt();
-
-	while (g.sig.sigint)
-	{
-		//gettimeofday(&start, NULL);
-
-		struct icmphdr* pckt_hdr;
-		char pckt_data[g.params.packet_size];
-
-		ft_memset(&pckt_hdr, 0, sizeof(pckt_hdr));
-		ft_memset(&pckt_data, 0, g.params.packet_size);
-
-		pckt_hdr->type = ICMP_ECHO;
-		pckt_hdr->code = 0;					// ?
-
-		pckt_hdr->un.echo.id = getpid();
-		pckt_hdr->un.echo.sequence = ++g.stats.sent;
-
-		t_pckt pckt;
-		pckt.hdr = pckt_hdr;
-		pckt.data = pckt_data;
-
-		int r = sendto(g.socket.fd, &pckt, sizeof(pckt), 0, g.recipient.sockaddr, sizeof(g.recipient.sockaddr));
-		if (r <= 0)
-		{
-			printf("oops\n");
-		}
-	}
-	gettimeofday(&g.stats.end, NULL);
-	statistics();
-}
-
-// need to review error messages
 void open_socket()
 {
 	if ((g.socket.fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
 		fatal_error(SOCKET);
-
-	if (setsockopt(g.socket.fd, IPPROTO_IP, IP_TTL,
-	&g.params.ttl, sizeof(g.params.ttl)) != 0)
+	if (setsockopt(g.socket.fd, IPPROTO_IP, IP_TTL, &g.params.ttl, sizeof(g.params.ttl)) != 0)
 		fatal_error(SOCKET);
-
-	if (setsockopt(g.socket.fd, SOL_SOCKET, SO_RCVTIMEO,
-	(const char*)&g.params.timeout, sizeof g.params.timeout) != 0)
+	if (setsockopt(g.socket.fd, SOL_SOCKET, SO_RCVTIMEO, &g.params.timeout, sizeof(g.params.timeout)) != 0)
 		fatal_error(SOCKET);
 }
 
-int main(int ac, char** av)
+int main(int ac, char **av)
 {
 	if (getuid() != 0)
 		fatal_error(OPERATION_NOT_PERMITTED);
 	if (ac < 2)
 		fatal_error(USAGE);
 	init();
-	parse_args(av);
+	parse_args(ac, av);
 	open_socket();
-
 	signal(SIGINT, sig_handler);
 	signal(SIGALRM, sig_handler);
 
-	ping();
+	prompt();
+	gettimeofday(&g.stats.start, NULL);
+	while (g.sig.sigint)
+	{
+		t_sequence seq;
+		if (!g.sig.sigalrm || g.params.interval == 0)
+		{
+			if (send_echo_request(&seq) == 0)
+				receive_echo_reply(&seq);
+
+			if (g.params.count > 0 && --g.params.count == 0)
+				break ;
+		}
+	}
+	gettimeofday(&g.stats.end, NULL);
+	statistics();
 
 	close(g.socket.fd);
 	return (0);
