@@ -12,7 +12,7 @@ void sig_handler(int signum)
 	{
 		case SIGINT:
 		{
-			g.sig.sigint = 0;
+			g.sig.sigint = 1;
 			break ;
 		}
 		case SIGALRM:
@@ -35,13 +35,14 @@ static void init()
 	g.params.count = -1;
 	g.params.timestamp = 0;
 	g.params.interval = 1;
+	g.params.quiet = 0;
 	g.params.ttl = 64;
 	g.params.packet_size = 56;
 	g.params.timeout.tv_sec = 1;
 	g.params.timeout.tv_usec = 0;
 	g.params.verbose = 0;
 	/* signal */
-	g.sig.sigint = 1;
+	g.sig.sigint = 0;
 	g.sig.sigalrm = 0;
 	/* stats */
 	g.stats.seq = 0;
@@ -85,7 +86,7 @@ int main(int ac, char **av)
 
 	prompt();
 	gettimeofday(&g.stats.start, NULL);
-	while (g.sig.sigint)
+	while (!g.sig.sigint)
 	{
 		t_sequence seq;
 		if (!g.sig.sigalrm || g.params.interval == 0)

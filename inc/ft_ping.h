@@ -25,16 +25,16 @@
 
 #define VERSION						"ft_ping 1.0\n"
 
-#define PROMPT						"PING %s (%s): %d(%d) bytes of data.\n"
+#define BANNER						"PING %s (%s): %d(%d) bytes of data.\n"
 
-#define STATS_1						"\n--- %s ft_ping statistics ---\n"
-#define STATS_2						"%d packets transmitted, %d received, %d%% packet loss, time %lums\n"
-#define STATS_2_ERR					"%d packets transmitted, %d received, +%d errors, %d%% packet loss, time %lums\n" // tmp
-#define STATS_3						"rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n"
+#define STATS_BANNER				"\n--- %s ft_ping statistics ---\n"
+#define STATS						"%d packets transmitted, %d received, %d%% packet loss, time %lums\n"
+#define STATS_ERR					"%d packets transmitted, %d received, +%d errors, %d%% packet loss, time %lums\n\n"
+#define STATS_RTT					"rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n"
 
 /* Error messages */
 
-#define USAGE						"Usage: sudo ft_ping [-v] [-h] [-c count] [-i interval] destination\n"
+#define USAGE						"Usage: sudo ft_ping [-DhqvV] [-c count] [-i interval] [-t ttl] destination\n"
 
 #define OPERATION_NOT_PERMITTED		"ft_ping: icmp open socket: Operation not permitted\n"
 #define SOCKET						"ft_ping: socket: Failed to create raw socket\n"
@@ -50,6 +50,8 @@
 
 #define NO_CONNEXION				"ft_ping: "
 
+#define HOST_UNREACHABLE			"From %s icmp_seq=%d Destination Net Unreachable\n"
+
 /* Structures */
 
 typedef struct s_params
@@ -58,6 +60,7 @@ typedef struct s_params
 	int timestamp;
 	unsigned int interval;
 	int flags;
+	int quiet;
 	unsigned int ttl;
 	int packet_size;
 	int verbose;
@@ -156,7 +159,7 @@ int receive_echo_reply(t_sequence *seq);
 /* Function prototypes from output.c */
 
 void prompt();
-void seq_info(struct msghdr *hdr, t_sequence *seq);
+void seq_info(t_sequence *seq);
 void statistics();
 void error(char *err);
 void fatal_error(char *err);

@@ -35,14 +35,14 @@ int receive_echo_reply(t_sequence *seq)
 	iov.iov_len = sizeof(buf);
 	mhdr.msg_iov = &iov;
 	mhdr.msg_iovlen = 1;
-	//mhdr.msg_name = g.host.name;
-
 	mhdr.msg_name = &in;
 	mhdr.msg_namelen = sizeof(in);
-
-	if ((seq->nbytes_received = recvmsg(g.socket.fd, &mhdr, 0)) <= 0)
+	seq->nbytes_received = recvmsg(g.socket.fd, &mhdr, 0);
+	if (seq->nbytes_received <= 0)
 	{
-		fprintf(stderr, "ft_ping: recvmsg: %s\n", strerror(errno));				// tmp
+		// what should i do here? whould i include 0 ?
+		fprintf(stderr, "ft_ping: recvmsg: %s\n", strerror(errno));
+		g.stats.errors++; // cout as an error i guess ?
 		return (-1);
 	}
 
@@ -51,15 +51,13 @@ int receive_echo_reply(t_sequence *seq)
 	if (ft_strcmp(seq->host_addr, g.host.addr) != 0)
 	{
 		g.stats.errors++;
-		printf("from %s icmp_seq=%d Destination Net Unreachable\n", seq->host_addr, seq->n);
+		printf(HOST_UNREACHABLE, seq->host_addr, g.stats.seq);
 	}
 	else
 	{
-		
+		update_stats(seq);
+		if (!g.params.quiet)
+			seq_info(seq);
 	}
-
-	update_stats(seq);
-	seq_info(&mhdr, seq);
 	return (0);
-
 }

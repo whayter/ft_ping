@@ -145,6 +145,8 @@ void parse_args(int ac, char **args)
 			g.params.timestamp = 1;
 		else if (ft_strcmp(args[i], "-i") == 0)
 			i += set_interval(i, ac, args);
+		else if (ft_strcmp(args[i], "-q") == 0)
+			g.params.quiet = 1;
 		else if (ft_strcmp(args[i], "-t") == 0)
 			i += set_ttl(i, ac, args);
 		else if (ft_strcmp(args[i], "-V") == 0)
