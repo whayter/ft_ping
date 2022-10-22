@@ -16,19 +16,16 @@ void update_stats(t_sequence *seq)
 	g.stats.sum += seq->rtt;
 	g.stats.ssum += (seq->rtt * seq->rtt);
 }
-/*
-void unpack_packet(t_sequence *seq)
-{
-
-}
-*/
 
 int receive_echo_reply(t_sequence *seq)
 {
 	struct msghdr mhdr;
+	struct cmsghdr *cmsg;
 	struct iovec iov;
 	char buf[g.params.packet_size];
 	struct sockaddr_in in;
+
+	uint8_t ctrlDataBuffer[CMSG_SPACE(sizeof(uint8_t))];
 
 	ft_memset(&mhdr, 0, sizeof(mhdr));
 	iov.iov_base = buf;
@@ -37,27 +34,37 @@ int receive_echo_reply(t_sequence *seq)
 	mhdr.msg_iovlen = 1;
 	mhdr.msg_name = &in;
 	mhdr.msg_namelen = sizeof(in);
+	mhdr.msg_control = &ctrlDataBuffer;
+	mhdr.msg_controllen = sizeof(ctrlDataBuffer);
+
 	seq->nbytes_received = recvmsg(g.socket.fd, &mhdr, 0);
 	if (seq->nbytes_received <= 0)
 	{
 		// what should i do here? whould i include 0 ?
 		fprintf(stderr, "ft_ping: recvmsg: %s\n", strerror(errno));
-		g.stats.errors++; // cout as an error i guess ?
+		g.stats.errors++; // count as an error i guess ? or should i exit ?
 		return (-1);
 	}
 
+	cmsg = CMSG_FIRSTHDR(&mhdr);
+	seq->pckt.ttl = *((uint8_t *)CMSG_DATA(cmsg));
 	inet_ntop(AF_INET, &in.sin_addr, seq->host_addr, INET6_ADDRSTRLEN);
-
 	if (ft_strcmp(seq->host_addr, g.host.addr) != 0)
 	{
 		g.stats.errors++;
-		printf(HOST_UNREACHABLE, seq->host_addr, g.stats.seq);
+
+		// encore un pb : ping -t 3 google.com devrait retourner ttl exceeded
+		
+		if (seq->pckt.ttl == 255)
+			fprintf(stderr, TTL_EXCEEDED, seq->host_addr, g.stats.seq);
+		else
+			fprintf(stderr, HOST_UNREACHABLE, seq->host_addr, g.stats.seq);
 	}
 	else
 	{
 		update_stats(seq);
 		if (!g.params.quiet)
-			seq_info(seq);
+			display_sequence_data(seq);
 	}
 	return (0);
 }

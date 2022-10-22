@@ -25,7 +25,11 @@
 
 #define VERSION						"ft_ping 1.0\n"
 
-#define BANNER						"PING %s (%s): %d(%d) bytes of data.\n"
+#define GLOBAL_BANNER				"PING %s (%s): %d(%d) bytes of data.\n"
+
+#define TIMESTAMP					"[%ld.%ld] "
+#define SEQUENCE_DATA				"%ld bytes from %s: icmp_seq=%d ttl=%d time=%.2lf ms\n"
+#define SEQUENCE_DATA_ALT			"%ld bytes from %s (%s): icmp_seq=%d ttl=%d time=%.2lf ms\n"
 
 #define STATS_BANNER				"\n--- %s ft_ping statistics ---\n"
 #define STATS						"%d packets transmitted, %d received, %d%% packet loss, time %lums\n"
@@ -48,8 +52,7 @@
 #define BAD_TTL						"ft_ping: can't set unicast time-to-live: Invalid argument\n"
 #define OUT_OF_RANGE_TTL			"ft_ping: ttl %d out of range\n"
 
-#define NO_CONNEXION				"ft_ping: "
-
+#define TTL_EXCEEDED				"From %s icmp_seq=%d Time to live exceeded\n"
 #define HOST_UNREACHABLE			"From %s icmp_seq=%d Destination Net Unreachable\n"
 
 /* Structures */
@@ -105,18 +108,8 @@ typedef struct s_pckt
 	struct icmphdr hdr;
 	char data[56];			// tmp
 	//char *data;
+	int ttl;
 } t_pckt;
-
-typedef struct s_ping_pckt
-{
-	uint8_t type;
-	uint8_t code;
-	uint16_t checksum;
-	u_int16_t id;
-	u_int16_t sequence;
-	char data[56];			// tmp
-	//char* data;
-} t_ping_pckt;
 
 typedef struct s_sequence
 {
@@ -127,7 +120,6 @@ typedef struct s_sequence
 	ssize_t nbytes_sent;
 	ssize_t nbytes_received;
 	t_pckt pckt;
-	//t_ping_pckt pckt;
 	char host_addr[INET6_ADDRSTRLEN];
 } t_sequence;
 
@@ -158,11 +150,9 @@ int receive_echo_reply(t_sequence *seq);
 
 /* Function prototypes from output.c */
 
-void prompt();
-void seq_info(t_sequence *seq);
-void statistics();
-void error(char *err);
-void fatal_error(char *err);
+void display_global_banner();
+void display_sequence_data(t_sequence *seq);
+void display_statistics();
 
 /* Function prototypes from utilities.c */
 

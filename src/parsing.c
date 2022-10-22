@@ -1,7 +1,7 @@
 #include "ft_ping.h"
 
 /*
-** -h option
+** -h option: display usage and exit
 */
 
 static void help()
@@ -11,7 +11,7 @@ static void help()
 }
 
 /*
-** -c [count] option
+** -c [count] option: stop after sending count ECHO_REQUEST packets
 */
 
 static int set_count(int i, int ac, char **args)
@@ -31,7 +31,8 @@ static int set_count(int i, int ac, char **args)
 }
 
 /*
-** -i [interval] option
+** -i [interval] option: wait interval seconds between sending each packet.
+** default interval is set to one second.
 */
 
 static int set_interval(int i, int ac, char **args)
@@ -56,7 +57,7 @@ static int set_interval(int i, int ac, char **args)
 }
 
 /*
-** -t [time-to-live] option
+** -t [time-to-live] option: set the IP Time to Live
 */
 
 static int set_ttl(int i, int ac, char **args)
@@ -90,7 +91,7 @@ static void version()
 }
 
 /*
-** bad option
+** bad option: display error and exit
 */
 
 static void bad_option(char opt)
@@ -100,7 +101,7 @@ static void bad_option(char opt)
 }
 
 /*
-** Get addrinfo from host name or ip address
+** get addrinfo from hostname or ip address
 */
 
 static void get_addr(char *hostname)
@@ -126,7 +127,7 @@ static void get_addr(char *hostname)
 }
 
 /*
-** Parameters parsing hub
+** ft_ping arguments parsing hub
 */
 
 void parse_args(int ac, char **args)

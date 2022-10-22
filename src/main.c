@@ -32,6 +32,7 @@ void sig_handler(int signum)
 static void init()
 {
 	/* params */
+
 	g.params.count = -1;
 	g.params.timestamp = 0;
 	g.params.interval = 1;
@@ -41,10 +42,14 @@ static void init()
 	g.params.timeout.tv_sec = 1;
 	g.params.timeout.tv_usec = 0;
 	g.params.verbose = 0;
+
 	/* signal */
+
 	g.sig.sigint = 0;
 	g.sig.sigalrm = 0;
+
 	/* stats */
+
 	g.stats.seq = 0;
 	g.stats.sent = 0;
 	g.stats.received = 0;
@@ -53,7 +58,9 @@ static void init()
 	g.stats.max = 0.0;
 	g.stats.sum = 0.0;
 	g.stats.ssum = 0.0;
+
 	/* host */
+
 	g.host.name = NULL;
 }
 
@@ -64,12 +71,20 @@ static void init()
 
 void open_socket()
 {
-	if ((g.socket.fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
-		fatal_error(SOCKET);
-	if (setsockopt(g.socket.fd, IPPROTO_IP, IP_TTL, &g.params.ttl, sizeof(g.params.ttl)) != 0)
-		fatal_error(SOCKET);
-	if (setsockopt(g.socket.fd, SOL_SOCKET, SO_RCVTIMEO, &g.params.timeout, sizeof(g.params.timeout)) != 0)
-		fatal_error(SOCKET);
+	g.socket.fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (g.socket.fd == -1)
+	{
+		fprintf(stderr, SOCKET);
+		exit(EXIT_FAILURE);
+	}
+	setsockopt(g.socket.fd, IPPROTO_IP, IP_TTL,
+	&g.params.ttl, sizeof(g.params.ttl));
+	setsockopt(g.socket.fd, SOL_SOCKET, SO_RCVTIMEO,
+	&g.params.timeout, sizeof(g.params.timeout));
+
+	//test
+	int yes = 1;
+	setsockopt(g.socket.fd, IPPROTO_IP, IP_RECVTTL, &yes, sizeof(yes));
 }
 
 /*
@@ -79,16 +94,22 @@ void open_socket()
 int main(int ac, char **av)
 {
 	if (getuid() != 0)
-		fatal_error(OPERATION_NOT_PERMITTED);
+	{
+		fprintf(stderr, OPERATION_NOT_PERMITTED);
+		exit(EXIT_FAILURE);
+	}
 	if (ac < 2)
-		fatal_error(USAGE);
+	{
+		fprintf(stderr, USAGE);
+		exit(EXIT_FAILURE);
+	}
 	init();
 	parse_args(ac, av);
 	open_socket();
 	signal(SIGINT, sig_handler);
 	signal(SIGALRM, sig_handler);
 
-	prompt();
+	display_global_banner();
 	gettimeofday(&g.stats.start, NULL);
 	while (!g.sig.sigint)
 	{
@@ -103,7 +124,7 @@ int main(int ac, char **av)
 		}
 	}
 	gettimeofday(&g.stats.end, NULL);
-	statistics();
+	display_statistics();
 
 	close(g.socket.fd);
 	return (0);

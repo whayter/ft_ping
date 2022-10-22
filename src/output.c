@@ -1,25 +1,26 @@
 #include "ft_ping.h"
 
-void prompt()
+void display_global_banner()
 {
-    printf(BANNER, g.host.name, g.host.addr, g.params.packet_size, g.params.packet_size + 28);
+    printf(GLOBAL_BANNER, g.host.name, g.host.addr,
+    g.params.packet_size, g.params.packet_size + 28);
     // The number in parenthesis represents the ping bytes sent including 28 bytes of the header packet.
     // not quite sure about the way to compute the size here
 }
 
-void seq_info(t_sequence *seq)
+void display_sequence_data(t_sequence *seq)
 {
     if (g.params.timestamp)
-		printf("[%ld.%ld] ", seq->end.tv_sec, seq->end.tv_usec);
+		printf(TIMESTAMP, seq->end.tv_sec, seq->end.tv_usec);
     if (ft_strcmp(g.host.name, g.host.addr) == 0)
-		printf("%ld bytes from %s: icmp_seq=%d ttl=%d time=%.2lf ms\n",
-		seq->nbytes_received, g.host.addr, g.stats.seq, g.params.ttl, seq->rtt);
+		printf(SEQUENCE_DATA, seq->nbytes_received,
+        g.host.addr, g.stats.seq, seq->pckt.ttl, seq->rtt);
 	else
-		printf("%ld bytes from %s (%s): icmp_seq=%d ttl=%d time=%.2lf ms\n",
-		seq->nbytes_received, g.host.name, g.host.addr, g.stats.seq, g.params.ttl, seq->rtt);
+		printf(SEQUENCE_DATA_ALT, seq->nbytes_received,
+        g.host.name, g.host.addr, g.stats.seq, seq->pckt.ttl, seq->rtt);
 }
 
-void statistics()
+void display_statistics()
 {
     int failure_rate;
     unsigned long time;
@@ -52,15 +53,4 @@ void statistics()
     {
         printf(STATS_ERR, g.stats.sent, g.stats.received, g.stats.errors, failure_rate, time);
     }
-}
-
-void error(char* err)
-{
-    fprintf(stderr, "%s", err);
-}
-
-void fatal_error(char* err)
-{
-    fprintf(stderr, "%s", err);
-    exit(EXIT_FAILURE);
 }
