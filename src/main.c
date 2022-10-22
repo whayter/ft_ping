@@ -72,6 +72,10 @@ void open_socket()
 		fatal_error(SOCKET);
 }
 
+/*
+** Main function
+*/
+
 int main(int ac, char **av)
 {
 	if (getuid() != 0)
