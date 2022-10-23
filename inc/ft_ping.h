@@ -113,7 +113,6 @@ typedef struct s_pckt
 
 typedef struct s_sequence
 {
-	int n;
 	struct timeval start;
 	struct timeval end;
 	double rtt;

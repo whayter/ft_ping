@@ -38,13 +38,10 @@ int receive_echo_reply(t_sequence *seq)
 	mhdr.msg_controllen = sizeof(ctrlDataBuffer);
 
 	seq->nbytes_received = recvmsg(g.socket.fd, &mhdr, 0);
-	if (seq->nbytes_received <= 0)
-	{
-		// what should i do here? whould i include 0 ?
-		fprintf(stderr, "ft_ping: recvmsg: %s\n", strerror(errno));
-		g.stats.errors++; // count as an error i guess ? or should i exit ?
+
+	// what should i do here? whould i include 0 ?
+	if (seq->nbytes_received < 0)
 		return (-1);
-	}
 
 	cmsg = CMSG_FIRSTHDR(&mhdr);
 	seq->pckt.ttl = *((uint8_t *)CMSG_DATA(cmsg));

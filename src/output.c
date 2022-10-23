@@ -41,16 +41,14 @@ void display_statistics()
     printf(STATS_BANNER, g.host.name);
 
     if (!g.stats.errors)
+        printf(STATS, g.stats.sent, g.stats.received, failure_rate, time);
+    else
+        printf(STATS_ERR, g.stats.sent, g.stats.received, g.stats.errors, failure_rate, time);
+    if (!g.stats.errors && g.stats.received > 0)
     {
         avg = g.stats.sum / g.stats.received;
         savg = g.stats.ssum / g.stats.received;
         mdev = sqrt(savg - (avg * avg));
-
-        printf(STATS, g.stats.sent, g.stats.received, failure_rate, time);
         printf(STATS_RTT, g.stats.min, avg, g.stats.max, mdev);
-    }
-    else
-    {
-        printf(STATS_ERR, g.stats.sent, g.stats.received, g.stats.errors, failure_rate, time);
     }
 }
