@@ -5,8 +5,10 @@ void update_stats(t_sequence *seq)
 	gettimeofday(&seq->end, NULL);
 	g.stats.received++;
 
-	seq->rtt = (seq->end.tv_sec * 1000.0) + (seq->end.tv_usec / 1000.0);
-	seq->rtt -= (seq->start.tv_sec * 1000.0) + (seq->start.tv_usec / 1000.0);
+	seq->rtt = (seq->end.tv_sec * 1000.0)
+	+ (seq->end.tv_usec / 1000.0);
+	seq->rtt -= (seq->start.tv_sec * 1000.0)
+	+ (seq->start.tv_usec / 1000.0);
 
 	if (seq->rtt < g.stats.min)
 		g.stats.min = seq->rtt;
@@ -46,16 +48,17 @@ int receive_echo_reply(t_sequence *seq)
 	cmsg = CMSG_FIRSTHDR(&mhdr);
 	seq->pckt.ttl = *((uint8_t *)CMSG_DATA(cmsg));
 	inet_ntop(AF_INET, &in.sin_addr, seq->host_addr, INET6_ADDRSTRLEN);
+
 	if (ft_strcmp(seq->host_addr, g.host.addr) != 0)
 	{
 		g.stats.errors++;
 
 		// encore un pb : ping -t 3 google.com devrait retourner ttl exceeded
 		
-		if (seq->pckt.ttl == 255)
+		//if (seq->pckt.ttl == 255)
 			fprintf(stderr, TTL_EXCEEDED, seq->host_addr, g.stats.seq);
-		else
-			fprintf(stderr, HOST_UNREACHABLE, seq->host_addr, g.stats.seq);
+		//else
+		//	fprintf(stderr, HOST_UNREACHABLE, seq->host_addr, g.stats.seq);
 	}
 	else
 	{
